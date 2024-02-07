@@ -24,7 +24,7 @@ while read -r line; do
         sed -i "/${ip_address} ${hostname} ${mac_address}/d" /tmp/wifi_clients.txt
         local_msg="New device REMOVED from the network, sending it to telegram..."
         logger -p local0.info -t dhcp-remove-notify "$local_msg"
-        send_to_telegram "New device REMOVED from $(cat /tmp/sysinfo/model | sed 's/([^)]*)//g'):
+        send_to_telegram "New device REMOVED from $(cat /tmp/sysinfo/model | sed 's/[()_-]//g'):
 \`\`\`
 Time: $(date "+%A %d-%b-%Y %T")
 Hostname: ${hostname}
