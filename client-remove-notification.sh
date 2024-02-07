@@ -9,8 +9,7 @@ send_to_telegram() {
     /usr/bin/curl -skim 15 --data disable_notification="true" --data parse_mode="MarkdownV2" --data chat_id="$chatID" --data-urlencode "text=$1" "https://api.telegram.org/bot${api_key}/sendMessage" > /dev/null
 }
 
-is_file_empty=$(cat /tmp/wifi_clients.txt  | wc -l)
-if [[ ! -f /tmp/wifi_clients.txt ]] || [[ "${is_file_empty}" == 0 ]]; then
+if [[ ! -f /tmp/wifi_clients.txt ]]; then
         cat /tmp/dhcp.leases | awk '{print $3,$4,$5}' > /tmp/wifi_clients.txt
 fi
 
