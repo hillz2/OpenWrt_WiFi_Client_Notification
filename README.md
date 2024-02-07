@@ -29,3 +29,6 @@ Send a telegram notification when a wifi client is connected / disconnected from
 ## Some Bugs:
 1. When you reboot your router, you'll get a bunch of `New device JOINED your network` messages on telegram
 2. When a device is removed from your network, it takes 1 minute to be notified on telegram
+
+## Screenshot:
+![2024-02-07-204829_1920x1080_scrot](https://github.com/hillz2/OpenWrt_WiFi_Client_Notification/assets/25127225/915d4f8b-de1b-4a75-abc4-7ef203dee1a5)
