@@ -20,7 +20,7 @@ if [ "$ACTION" = "update" ] || [ "$ACTION" = "add" ]; then
     echo "${ip_address} ${hostname} ${mac_address}" >> /tmp/wifi_clients.txt
     local_msg="New device JOINED the network, sending it to telegram..."
     logger -p local0.info -t dhcp-join-notify "$local_msg"
-    send_to_telegram "New device JOINED $(cat /tmp/sysinfo/model):
+    send_to_telegram "New device JOINED $(cat /tmp/sysinfo/model | sed 's/([^)]*)//g'):
 \`\`\`
 Time: $(date "+%A %d-%b-%Y %T")
 Hostname: ${hostname}
