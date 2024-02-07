@@ -1,0 +1,33 @@
+# /etc/hotplug.d/dhcp/98-client-join-notification
+
+#!/bin/sh
+
+send_to_telegram() {
+    echo "$1"
+    chatID="YOUR CHAT ID HERE"
+    api_key="YOUR BOT TOKEN HERE"
+    /usr/bin/curl -skim 15 --data disable_notification="true" --data parse_mode="MarkdownV2" --data chat_id="$chatID" --data-urlencode "text=$1" "https://api.telegram.org/bot${api_key}/sendMessage" > /dev/null
+}
+
+logger -p local0.info -t dhcp-join-notify "WiFi Client Telegram Notification. Action: $ACTION"
+
+if [ "$ACTION" = "update" ] || [ "$ACTION" = "add" ]; then
+    new_client=$(logread -e 'dnsmasq-dhcp.*DHCPACK' | tail -n1)
+    hostname=$(echo "$new_client" | awk '{print $11}')
+    ip_address=$(echo "$new_client" | awk '{print $9}')
+    mac_address=$(echo "$new_client" | awk '{print $10}')
+    sed -i "/${ip_address} ${hostname} ${mac_address}/d" /tmp/wifi_clients.txt # Remove duplicate lines if there's any
+    echo "${ip_address} ${hostname} ${mac_address}" >> /tmp/wifi_clients.txt
+    local_msg="New device JOINED the network, sending it to telegram..."
+    logger -p local0.info -t dhcp-join-notify "$local_msg"
+    send_to_telegram "New device JOINED $(cat /tmp/sysinfo/model):
+\`\`\`
+Time: $(date "+%A %d-%b-%Y %T")
+Hostname: ${hostname}
+IP Address: ${ip_address}
+MAC Address: ${mac_address}
+\`\`\`"
+fi
+
+# THIS SCRIPT WAS WRITTEN BY https://www.facebook.com/galihpa/
+# CHECK OUT THE GITHUB REPO AT: https://github.com/hillz2/OpenWrt_WiFi_Client_Notification
