@@ -9,29 +9,31 @@ send_to_telegram() {
     /usr/bin/curl -skim 15 --data disable_notification="true" --data parse_mode="MarkdownV2" --data chat_id="$chatID" --data-urlencode "text=$1" "https://api.telegram.org/bot${api_key}/sendMessage" > /dev/null
 }
 
-if [[ ! -f /tmp/wifi_clients.txt ]]; then
-    cat /tmp/dhcp.leases | awk '{print $3,$4,$5}' > /tmp/wifi_clients.txt
-else
-    while read -r line; do
-        ip_address=$(echo "${line}" | awk '{print $1}')
-        hostname=$(echo "${line}" | awk '{print $2}')
-        mac_address=$(echo "${line}" | awk '{print $3}')
+is_file_empty=$(cat /tmp/wifi_clients.txt  | wc -l)
+if [[ ! -f /tmp/wifi_clients.txt ]] || [[ "${is_file_empty}" == 0 ]]; then
+        cat /tmp/dhcp.leases | awk '{print $3,$4,$5}' > /tmp/wifi_clients.txt
+fi
 
-        ping -c 3 -W 3 "${ip_address}" > /dev/null 2>&1
-        if [[ $? != 0 ]]; then # If client is DISCONNECTED from Wi-Fi
-            sed -i "/${ip_address} ${hostname} ${mac_address}/d" /tmp/wifi_clients.txt
-            local_msg="New device REMOVED from the network, sending it to telegram..."
-            logger -p local0.info -t dhcp-remove-notify "$local_msg"
-            send_to_telegram "New device REMOVED from $(cat /tmp/sysinfo/model | sed 's/([^)]*)//g'):
+while read -r line; do
+    ip_address=$(echo "${line}" | awk '{print $1}')
+    hostname=$(echo "${line}" | awk '{print $2}')
+    mac_address=$(echo "${line}" | awk '{print $3}')
+
+    ping -c 3 -W 3 "${ip_address}" > /dev/null 2>&1
+    if [[ $? != 0 ]]; then # If client is DISCONNECTED from Wi-Fi
+        sed -i "/${ip_address} ${hostname} ${mac_address}/d" /tmp/wifi_clients.txt
+        local_msg="New device REMOVED from the network, sending it to telegram..."
+        logger -p local0.info -t dhcp-remove-notify "$local_msg"
+        send_to_telegram "New device REMOVED from $(cat /tmp/sysinfo/model | sed 's/([^)]*)//g'):
 \`\`\`
 Time: $(date "+%A %d-%b-%Y %T")
 Hostname: ${hostname}
 IP Address: ${ip_address}
 MAC Address: ${mac_address}
 \`\`\`"
-        fi
-        sleep 1
-    done < /tmp/wifi_clients.txt
-fi
+    fi
+    sleep 1
+done < /tmp/wifi_clients.txt
+
 # THIS SCRIPT WAS WRITTEN BY https://www.facebook.com/galihpa/
 # CHECK OUT THE GITHUB REPO AT: https://github.com/hillz2/OpenWrt_WiFi_Client_Notification
