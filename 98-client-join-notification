@@ -14,14 +14,14 @@ logger -p local0.info -t dhcp-join-notify "WiFi Client Telegram Notification. Ac
 if [ "$ACTION" = "update" ] || [ "$ACTION" = "add" ]; then
     device_name=$(cat /tmp/sysinfo/model | sed 's/[()_-]//g;s/ //g')
     new_client=$(logread -e 'dnsmasq-dhcp.*DHCPACK' | tail -n1)
-    hostname=$(echo "$new_client" | awk '{print $11}' | sed 's/[()_-]//g;s/ //g')
+    hostname=$(echo "$new_client" | awk '{print $11}')
     ip_address=$(echo "$new_client" | awk '{print $9}')
     mac_address=$(echo "$new_client" | awk '{print $10}')
     sed -i "/${ip_address} ${hostname} ${mac_address}/d" /tmp/wifi_clients.txt # Remove duplicate lines if there's any
     echo "${ip_address} ${hostname} ${mac_address}" >> /tmp/wifi_clients.txt
     local_msg="New device JOINED the network, sending it to telegram..."
     logger -p local0.info -t dhcp-join-notify "$local_msg"
-    send_to_telegram "\#${hostname} JOINED \#${device_name}:
+    send_to_telegram "\#$(echo "${hostname}" | sed 's/[()_-]//g;s/ //g') JOINED \#${device_name}:
 \`\`\`
 Time: $(date "+%A %d-%b-%Y %T")
 Hostname: ${hostname}
