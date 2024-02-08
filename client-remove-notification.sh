@@ -16,7 +16,7 @@ device_name=$(cat /tmp/sysinfo/model | sed 's/[()_-]//g;s/ //g')
 
 while read -r line; do
     ip_address=$(echo "${line}" | awk '{print $1}')
-    hostname=$(echo "${line}" | awk '{print $2}' | sed 's/ //')
+    hostname=$(echo "${line}" | awk '{print $2}' | sed 's/[()_-]//g;s/ //g')
     mac_address=$(echo "${line}" | awk '{print $3}')
 
     ping -c 1 -W 5 "${ip_address}" > /dev/null 2>&1
