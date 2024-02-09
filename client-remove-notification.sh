@@ -4,9 +4,13 @@
 
 send_to_telegram() {
     echo "$1"
-    chatID="YOUR CHAT ID HERE"
-    api_key="YOUR BOT TOKEN HERE"
-    /usr/bin/curl -skim 15 --data disable_notification="true" --data parse_mode="MarkdownV2" --data chat_id="$chatID" --data-urlencode "text=$1" "https://api.telegram.org/bot${api_key}/sendMessage" > /dev/null
+    token=$(uci get telegram-bot.mybot.token)
+    chat_id=$(uci get telegram-bot.mybot.chat_id)
+    if [[ -n "${token}" ]] && [[ -n "${chat_id}" ]]; then
+        curl -skim 10 --data disable_notification="false" --data parse_mode="MarkdownV2" --data chat_id="$chat_id" --data-urlencode "text=$1" "https://api.telegram.org/bot${token}/sendMessage" > /dev/null
+    else
+        echo "Your telegram chat_id or token is empty"
+    fi
 }
 
 if [[ ! -f /tmp/wifi_clients.txt ]]; then
@@ -19,7 +23,7 @@ while read -r line; do
     hostname=$(echo "${line}" | awk '{print $2}')
     mac_address=$(echo "${line}" | awk '{print $3}')
 
-    ping -c 1 -W 5 "${ip_address}" > /dev/null 2>&1
+    ping -c 1 -w 11 "${ip_address}" > /dev/null 2>&1
     if [[ $? != 0 ]]; then # If client is DISCONNECTED from Wi-Fi
         sed -i "/${ip_address} ${hostname} ${mac_address}/d" /tmp/wifi_clients.txt
         local_msg="New device REMOVED from the network, sending it to telegram..."
