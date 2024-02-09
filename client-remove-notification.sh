@@ -3,13 +3,13 @@
 #!/bin/sh
 
 send_to_telegram() {
-    logger -p local0.info -t dhcp-join-notify "$1"
+    logger -p local0.info -t dhcp-remove-notify "$1"
     token=$(uci get telegram-bot.mybot.token)
     chat_id=$(uci get telegram-bot.mybot.chat_id)
     if [[ -n "${token}" ]] && [[ -n "${chat_id}" ]]; then
         curl -skim 10 --data disable_notification="false" --data parse_mode="MarkdownV2" --data chat_id="$chat_id" --data-urlencode "text=$1" "https://api.telegram.org/bot${token}/sendMessage" > /dev/null
     else
-        logger -p local0.info -t dhcp-join-notify "Error: Your telegram chat_id or token is empty"
+        logger -p local0.info -t dhcp-remove-notify "Error: Your telegram chat_id or token is empty"
     fi
 }
 
