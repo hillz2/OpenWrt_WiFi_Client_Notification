@@ -1,5 +1,5 @@
 # OpenWrt_WiFi_Client_Notification
-Send a telegram notification when a wifi client is connected / disconnected from your OpenWrt router, I've made the telegram notifications silent on purpose so that it won't be annoying when you get them a lot.
+Send a telegram notification every time a wifi client is connected / disconnected from your OpenWrt router.
 
 ## Tutorial:
 1. Create a telegram bot at https://t.me/BotFather Copy your `BOT_TOKEN`
