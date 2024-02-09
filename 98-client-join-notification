@@ -4,9 +4,13 @@
 
 send_to_telegram() {
     echo "$1"
-    chatID="YOUR CHAT ID HERE"
-    api_key="YOUR BOT TOKEN HERE"
-    /usr/bin/curl -skim 15 --data disable_notification="true" --data parse_mode="MarkdownV2" --data chat_id="$chatID" --data-urlencode "text=$1" "https://api.telegram.org/bot${api_key}/sendMessage" > /dev/null
+    token=$(uci get telegram-bot.mybot.token)
+    chat_id=$(uci get telegram-bot.mybot.chat_id)
+    if [[ -n "${token}" ]] && [[ -n "${chat_id}" ]]; then
+        curl -skim 10 --data disable_notification="false" --data parse_mode="MarkdownV2" --data chat_id="$chat_id" --data-urlencode "text=$1" "https://api.telegram.org/bot${token}/sendMessage" > /dev/null
+    else
+        echo "Your telegram chat_id or token is empty"
+    fi
 }
 
 logger -p local0.info -t dhcp-join-notify "WiFi Client Telegram Notification. Action: $ACTION"
@@ -17,11 +21,12 @@ if [ "$ACTION" = "update" ] || [ "$ACTION" = "add" ]; then
     hostname=$(echo "$new_client" | awk '{print $11}')
     ip_address=$(echo "$new_client" | awk '{print $9}')
     mac_address=$(echo "$new_client" | awk '{print $10}')
-    sed -i "/${ip_address} ${hostname} ${mac_address}/d" /tmp/wifi_clients.txt # Remove duplicate lines if there's any
-    echo "${ip_address} ${hostname} ${mac_address}" >> /tmp/wifi_clients.txt
-    local_msg="New device JOINED the network, sending it to telegram..."
-    logger -p local0.info -t dhcp-join-notify "$local_msg"
-    send_to_telegram "\#$(echo "${hostname}" | sed 's/[()_-]//g;s/ //g') JOINED \#${device_name}:
+    if [[ -n "${ip_address}" ]]; then
+        sed -i "/${ip_address} ${hostname} ${mac_address}/d" /tmp/wifi_clients.txt # Remove duplicate lines if there's any
+        echo "${ip_address} ${hostname} ${mac_address}" >> /tmp/wifi_clients.txt
+        local_msg="New device JOINED the network, sending it to telegram..."
+        logger -p local0.info -t dhcp-join-notify "$local_msg"
+        send_to_telegram "\#$(echo "${hostname}" | sed 's/[()_-]//g;s/ //g') JOINED \#${device_name}:
 \`\`\`
 Time: $(date "+%A %d-%b-%Y %T")
 Hostname: ${hostname}
