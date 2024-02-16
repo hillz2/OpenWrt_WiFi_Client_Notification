@@ -19,6 +19,7 @@ if [ "$ACTION" = "update" ] || [ "$ACTION" = "add" ]; then
     device_name=$(cat /tmp/sysinfo/model | sed 's/[()_-]//g;s/ //g')
     new_client=$(logread -e 'dnsmasq-dhcp.*DHCPACK' | tail -n1)
     hostname=$(echo "$new_client" | awk '{print $11}')
+    [[ -z "${hostname}" ]] && hostname="NOHOSTNAME"
     ip_address=$(echo "$new_client" | awk '{print $9}')
     mac_address=$(echo "$new_client" | awk '{print $10}')
     if [[ -n "${ip_address}" ]]; then
