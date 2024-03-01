@@ -16,7 +16,7 @@ send_to_telegram() {
 logger -p local0.info -t dhcp-join-notify "WiFi Client Telegram Notification. Action: $ACTION"
 
 if [ "$ACTION" = "update" ] || [ "$ACTION" = "add" ]; then
-    device_name=$(cat /tmp/sysinfo/model | sed 's/[()_-]//g;s/ //g')
+    device_name=$(cat /tmp/sysinfo/model | sed 's/[^a-zA-Z0-9]//g')
     new_client=$(logread -e 'dnsmasq-dhcp.*DHCPACK' | tail -n1)
     hostname=$(echo "$new_client" | awk '{print $11}')
     [[ -z "${hostname}" ]] && hostname="NOHOSTNAME"
