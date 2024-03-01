@@ -16,7 +16,7 @@ send_to_telegram() {
 if [[ ! -f /tmp/wifi_clients.txt ]]; then
         cat /tmp/dhcp.leases | awk '{print $3,$4,$5}' > /tmp/wifi_clients.txt
 fi
-device_name=$(cat /tmp/sysinfo/model | sed 's/[()_-]//g;s/ //g')
+device_name=$(cat /tmp/sysinfo/model | sed 's/[^a-zA-Z0-9]//g')
 
 while read -r line; do
     ip_address=$(echo "${line}" | awk '{print $1}')
